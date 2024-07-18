@@ -1,251 +1,294 @@
-import { playNote } from "./visualizer.js";
-import { pianoKeyMapping } from "./utils";
 import * as Tone from "tone";
+import { pianoKeyMapping } from "./utils";
 
 const scales = {
-    C: ["C", "D", "E", "F", "G", "A", "B"],
-    G: ["G", "A", "B", "C", "D", "E", "F#"],
-    F: ["F", "G", "A", "Bb", "C", "D", "E"],
-    Am: ["A", "B", "C", "D", "E", "F", "G"],
-    Em: ["E", "F#", "G", "A", "B", "C", "D"],
+  C: ["C", "D", "E", "F", "G", "A", "B"],
+  G: ["G", "A", "B", "C", "D", "E", "F#"],
+  D: ["D", "E", "F#", "G", "A", "B", "C#"],
+  A: ["A", "B", "C#", "D", "E", "F#", "G#"],
+  F: ["F", "G", "A", "Bb", "C", "D", "E"],
+  Bb: ["Bb", "C", "D", "Eb", "F", "G", "A"],
+  Eb: ["Eb", "F", "G", "Ab", "Bb", "C", "D"],
+  Ab: ["Ab", "Bb", "C", "Db", "Eb", "F", "G"],
+  E: ["E", "F#", "G#", "A", "B", "C#", "D#"],
+  B: ["B", "C#", "D#", "E", "F#", "G#", "A#"],
+  Fsharp: ["F#", "G#", "A#", "B", "C#", "D#", "F"],
+  Cminor: ["C", "D", "Eb", "F", "G", "Ab", "Bb"],
+  Aminor: ["A", "B", "C", "D", "E", "F", "G"],
+  Eminor: ["E", "F#", "G", "A", "B", "C", "D"],
 };
 
-const chordProgressions = {
-    C: [
-        ["C", "Am", "F", "G", "Em", "Am", "Dm", "G"],
-        ["C", "Em", "Am", "F", "C", "Dm", "G", "C"],
-    ],
-    G: [
-        ["G", "Em", "C", "D", "Bm", "C", "Am", "D"],
-        ["G", "Bm", "Em", "C", "G", "Am", "D", "G"],
-    ],
-    F: [
-        ["F", "Dm", "Bb", "C", "Am", "Dm", "Gm", "C"],
-        ["F", "Am", "Dm", "Bb", "F", "Gm", "C", "F"],
-    ],
-    Am: [
-        ["Am", "F", "C", "G", "Am", "Em", "F", "G"],
-        ["Am", "Dm", "G", "C", "F", "Dm", "E", "Am"],
-    ],
-    Em: [
-        ["Em", "C", "G", "D", "Am", "C", "B", "Em"],
-        ["Em", "G", "D", "C", "Am", "B", "Em", "B"],
-    ],
-};
+const dreamyProgressions = [
+  ["I", "vi", "IV", "V"],
+  ["vi", "IV", "I", "V"],
+  ["I", "iii", "vi", "IV"],
+  ["IV", "V", "iii", "vi"],
+];
 
 const chords = {
-    C: ["C", "E", "G"],
-    F: ["F", "A", "C"],
-    G: ["G", "B", "D"],
-    Am: ["A", "C", "E"],
-    Dm: ["D", "F", "A"],
-    E: ["E", "G#", "B"],
-    Bb: ["Bb", "D", "F"],
-    D: ["D", "F#", "A"],
-    Em: ["E", "G", "B"],
-    Bm: ["B", "D", "F#"],
-    Gm: ["G", "Bb", "D"],
+  C: {
+    I: ["C", "E", "G"],
+    ii: ["D", "F", "A"],
+    iii: ["E", "G", "B"],
+    IV: ["F", "A", "C"],
+    V: ["G", "B", "D"],
+    vi: ["A", "C", "E"],
+    vii: ["B", "D", "F"],
+  },
+  G: {
+    I: ["G", "B", "D"],
+    ii: ["A", "C", "E"],
+    iii: ["B", "D", "F#"],
+    IV: ["C", "E", "G"],
+    V: ["D", "F#", "A"],
+    vi: ["E", "G", "B"],
+    vii: ["F#", "A", "C"],
+  },
+  D: {
+    I: ["D", "F#", "A"],
+    ii: ["E", "G", "B"],
+    iii: ["F#", "A", "C#"],
+    IV: ["G", "B", "D"],
+    V: ["A", "C#", "E"],
+    vi: ["B", "D", "F#"],
+    vii: ["C#", "E", "G"],
+  },
+  A: {
+    I: ["A", "C#", "E"],
+    ii: ["B", "D", "F#"],
+    iii: ["C#", "E", "G#"],
+    IV: ["D", "F#", "A"],
+    V: ["E", "G#", "B"],
+    vi: ["F#", "A", "C#"],
+    vii: ["G#", "B", "D"],
+  },
+  E: {
+    I: ["E", "G#", "B"],
+    ii: ["F#", "A", "C#"],
+    iii: ["G#", "B", "D#"],
+    IV: ["A", "C#", "E"],
+    V: ["B", "D#", "F#"],
+    vi: ["C#", "E", "G#"],
+    vii: ["D#", "F#", "A"],
+  },
+  B: {
+    I: ["B", "D#", "F#"],
+    ii: ["C#", "E", "G#"],
+    iii: ["D#", "F#", "A#"],
+    IV: ["E", "G#", "B"],
+    V: ["F#", "A#", "C#"],
+    vi: ["G#", "B", "D#"],
+    vii: ["A#", "C#", "E"],
+  },
+  F: {
+    I: ["F", "A", "C"],
+    ii: ["G", "Bb", "D"],
+    iii: ["A", "C", "E"],
+    IV: ["Bb", "D", "F"],
+    V: ["C", "E", "G"],
+    vi: ["D", "F", "A"],
+    vii: ["E", "G", "Bb"],
+  },
+  Bb: {
+    I: ["Bb", "D", "F"],
+    ii: ["C", "Eb", "G"],
+    iii: ["D", "F", "A"],
+    IV: ["Eb", "G", "Bb"],
+    V: ["F", "A", "C"],
+    vi: ["G", "Bb", "D"],
+    vii: ["A", "C", "Eb"],
+  },
+  Eb: {
+    I: ["Eb", "G", "Bb"],
+    ii: ["F", "Ab", "C"],
+    iii: ["G", "Bb", "D"],
+    IV: ["Ab", "C", "Eb"],
+    V: ["Bb", "D", "F"],
+    vi: ["C", "Eb", "G"],
+    vii: ["D", "F", "Ab"],
+  },
+  Ab: {
+    I: ["Ab", "C", "Eb"],
+    ii: ["Bb", "Db", "F"],
+    iii: ["C", "Eb", "G"],
+    IV: ["Db", "F", "Ab"],
+    V: ["Eb", "G", "Bb"],
+    vi: ["F", "Ab", "C"],
+    vii: ["G", "Bb", "Db"],
+  },
+  Db: {
+    I: ["Db", "F", "Ab"],
+    ii: ["Eb", "Gb", "Bb"],
+    iii: ["F", "Ab", "C"],
+    IV: ["Gb", "Bb", "Db"],
+    V: ["Ab", "C", "Eb"],
+    vi: ["Bb", "Db", "F"],
+    vii: ["C", "Eb", "Gb"],
+  },
+  Gb: {
+    I: ["Gb", "Bb", "Db"],
+    ii: ["Ab", "Cb", "Eb"],
+    iii: ["Bb", "Db", "F"],
+    IV: ["Cb", "Eb", "Gb"],
+    V: ["Db", "F", "Ab"],
+    vi: ["Eb", "Gb", "Bb"],
+    vii: ["F", "Ab", "Cb"],
+  },
 };
 
-function playSVGPath(path) {
-    const commands = path.match(/[A-Za-z][^A-Za-z]*/g) || [];
-    const maxCommands = Math.min(400, commands.length);
+function playSVGPath(path, highlightKeyCallback) {
+  const commands = path.match(/[A-Za-z][^A-Za-z]*/g) || [];
+  const maxCommands = Math.min(400, commands.length);
 
-    if (maxCommands === 0) {
-        console.error("No valid commands found in SVG path");
+  if (maxCommands === 0) {
+    console.error("No valid commands found in SVG path");
+    return;
+  }
+
+  let currentKey = "C";
+  let currentScale = scales[currentKey];
+  let currentProgression = dreamyProgressions[0];
+  let chordIndex = 0;
+  let previousNote = null;
+
+  const reverb = new Tone.Reverb({
+    decay: 15,
+    wet: 0.8,
+  }).toDestination();
+
+  const delay = new Tone.FeedbackDelay({
+    delayTime: "8n.",
+    feedback: 0.4,
+    wet: 0.3,
+  }).connect(reverb);
+
+  const chorus = new Tone.Chorus({
+    frequency: 0.8,
+    delayTime: 5,
+    depth: 0.7,
+    wet: 0.5,
+  }).connect(delay);
+
+  const compressor = new Tone.Compressor({
+    threshold: -24,
+    ratio: 3,
+    attack: 0.1,
+    release: 0.5,
+  }).connect(chorus);
+
+  const pianoWithEffects = new Tone.Sampler({
+    urls: pianoKeyMapping,
+    baseUrl: "/music/",
+  }).chain(compressor, chorus, delay, reverb, Tone.Destination);
+
+  const sequence = new Tone.Sequence(
+    (time, index) => {
+      if (index >= maxCommands) {
+        sequence.stop();
+        Tone.Transport.stop();
         return;
-    }
+      }
 
-    let currentKey = "C";
-    let currentScale = scales[currentKey];
-    let currentChordProgression = chordProgressions[currentKey][0];
-    let chordIndex = 0;
-    let previousNote = null;
-    let phraseStart = 0;
-    let tempoMultiplier = 1;
-    let melodyDensity = 0.5;
+      const command = commands[index];
+      if (!command) return;
 
-    const sequence = new Tone.Sequence(
-        (time, index) => {
-            if (index >= maxCommands) {
-                sequence.stop();
-                Tone.getTransport().stop();
-                return;
-            }
+      const numbers = command.match(/-?\d+(\.\d+)?/g)?.map(Number) || [];
+      if (numbers.length < 2) return;
 
-            const command = commands[index];
-            if (!command) return;
+      const [x, y] = numbers;
 
-            const numbers = command.match(/-?\d+(\.\d+)?/g)?.map(Number) || [];
-            if (numbers.length < 2) return;
+      if (index % 48 === 0) {
+        currentProgression =
+          dreamyProgressions[
+            Math.floor(Math.random() * dreamyProgressions.length)
+          ];
+        chordIndex = 0;
+        currentKey =
+          Object.keys(scales)[
+            Math.floor(Math.random() * Object.keys(scales).length)
+          ];
+        currentScale = scales[currentKey];
+      }
 
-            const [x, y] = numbers;
+      const chordName = currentProgression[chordIndex];
+      const chord = chords[currentKey][chordName];
 
-            // Change key and chord progression every 32 steps
-            if (index % 32 === 0) {
-                const keys = Object.keys(scales);
-                currentKey = keys[Math.floor(Math.random() * keys.length)];
-                currentScale = scales[currentKey];
-                currentChordProgression =
-                    chordProgressions[currentKey][
-                        Math.floor(
-                            Math.random() * chordProgressions[currentKey].length
-                        )
-                    ];
-                chordIndex = 0;
-                phraseStart = index;
+      const noteIndex = Math.floor(Math.abs(x) % currentScale.length);
+      const octave = Math.floor(3 + (Math.abs(y) % 3));
+      const note = `${currentScale[noteIndex]}${octave}`;
 
-                tempoMultiplier = 0.8 + Math.random() * 0.4;
-                Tone.Transport.bpm.rampTo(60 * tempoMultiplier, 2);
+      const velocity = 0.1 + Math.min(0.2, Math.abs(x) / 3000);
+      const duration = Tone.Time("4n") + Tone.Time("8n") * (Math.abs(y) % 4);
 
-                melodyDensity = 0.3 + Math.random() * 0.5;
-            }
+      // Play chord
+      if (index % 6 === 0) {
+        chord.forEach((chordNote, i) => {
+          const fullNote = `${chordNote}${octave - 1}`;
+          pianoWithEffects.triggerAttackRelease(
+            fullNote,
+            "2n",
+            time + i * 0.12,
+            velocity * 0.5
+          );
+          highlightKeyCallback(fullNote);
+        });
+        chordIndex = (chordIndex + 1) % currentProgression.length;
+      }
 
-            const chordName = currentChordProgression[chordIndex];
-            const chord = chords[chordName];
+      // Play melody note
+      if (Math.random() < 0.5) {
+        pianoWithEffects.triggerAttackRelease(note, duration, time, velocity);
+        highlightKeyCallback(note);
 
-            if (!chord) {
-                console.error(`Invalid chord: ${chordName}`);
-                return;
-            }
+        // Add occasional harmonies
+        if (Math.random() < 0.3) {
+          const harmonyNote =
+            currentScale[(noteIndex + 2) % currentScale.length] + octave;
+          pianoWithEffects.triggerAttackRelease(
+            harmonyNote,
+            duration,
+            time + Tone.Time("16n"),
+            velocity * 0.4
+          );
+          highlightKeyCallback(harmonyNote);
+        }
+      }
 
-            const noteIndex = Math.floor(Math.abs(x) % currentScale.length);
-            const octave = Math.floor(Math.abs(y) % 3) + 3;
-            const note = `${currentScale[noteIndex]}${octave}`;
+      // Add occasional bass note
+      if (Math.random() < 0.1) {
+        const bassNote = chord[0] + (octave - 2);
+        pianoWithEffects.triggerAttackRelease(
+          bassNote,
+          "2n",
+          time,
+          velocity * 0.3
+        );
+        highlightKeyCallback(bassNote);
+      }
 
-            const baseVelocity = Math.min(0.7, Math.abs(x) / 300 + 0.3);
-            const velocity = baseVelocity * (0.8 + Math.random() * 0.4);
-            const baseDuration =
-                (0.5 + (Math.abs(y) % 5) * 0.3) * tempoMultiplier;
+      // Add occasional high sparkling notes
+      if (Math.random() < 0.05) {
+        const sparkleNote =
+          currentScale[Math.floor(Math.random() * currentScale.length)] +
+          (octave + 1);
+        pianoWithEffects.triggerAttackRelease(
+          sparkleNote,
+          "8n",
+          time,
+          velocity * 0.2
+        );
+        highlightKeyCallback(sparkleNote);
+      }
 
-            // Harmonic foundation
-            if (index % 3 === 0) {
-                const patternType = Math.random();
-                if (patternType < 0.6) {
-                    // Gentle arpeggios
-                    chord.forEach((chordNote, i) => {
-                        playNote(
-                            `${chordNote}${octave - 1}`,
-                            "8n",
-                            time + i * 0.25 * tempoMultiplier,
-                            velocity * 0.3
-                        );
-                    });
-                } else {
-                    // Soft sustained chord
-                    chord.forEach((chordNote) => {
-                        playNote(
-                            `${chordNote}${octave - 1}`,
-                            "2n",
-                            time,
-                            velocity * 0.2
-                        );
-                    });
-                }
-                chordIndex = (chordIndex + 1) % currentChordProgression.length;
-            }
+      previousNote = note;
+    },
+    [...Array(maxCommands).keys()],
+    "4n"
+  );
 
-            // Melody logic with variable density
-            if (Math.random() < melodyDensity) {
-                let melodyNote;
-                if (chord.includes(currentScale[noteIndex])) {
-                    melodyNote = note;
-                } else {
-                    const nearestChordTone = chord.reduce(
-                        (nearest, chordNote) => {
-                            return Math.abs(
-                                currentScale.indexOf(chordNote) - noteIndex
-                            ) <
-                                Math.abs(
-                                    currentScale.indexOf(nearest) - noteIndex
-                                )
-                                ? chordNote
-                                : nearest;
-                        }
-                    );
-                    melodyNote =
-                        Math.random() < 0.8
-                            ? `${nearestChordTone}${octave}`
-                            : note;
-                }
-
-                // Apply voice leading
-                if (previousNote) {
-                    const interval = Math.abs(
-                        currentScale.indexOf(melodyNote[0]) -
-                            currentScale.indexOf(previousNote[0])
-                    );
-                    if (interval > 3) {
-                        const direction = melodyNote > previousNote ? -1 : 1;
-                        melodyNote = `${
-                            currentScale[
-                                (currentScale.indexOf(previousNote[0]) +
-                                    direction +
-                                    7) %
-                                    7
-                            ]
-                        }${octave}`;
-                    }
-                }
-
-                const timingVariation = Math.random() * 0.1 * tempoMultiplier;
-                const noteDuration = baseDuration * (0.8 + Math.random() * 0.4);
-
-                playNote(
-                    melodyNote,
-                    noteDuration,
-                    time + timingVariation,
-                    velocity * 0.9
-                );
-
-                previousNote = melodyNote;
-
-                // Occasional soft echo
-                if (Math.random() < 0.2) {
-                    playNote(
-                        melodyNote,
-                        noteDuration * 0.5,
-                        time + noteDuration * 1.2,
-                        velocity * 0.4
-                    );
-                }
-
-                // Add subtle ornamentation
-                if (Math.random() < 0.15) {
-                    const graceNote = `${
-                        currentScale[(noteIndex + 1) % 7]
-                    }${octave}`;
-                    playNote(
-                        graceNote,
-                        "32n",
-                        time - 0.05 * tempoMultiplier,
-                        velocity * 0.6
-                    );
-                }
-            }
-
-            // Occasional soft background note for texture
-            if (Math.random() < 0.08) {
-                const textureNote = `${
-                    currentScale[
-                        Math.floor(Math.random() * currentScale.length)
-                    ]
-                }${octave - 1}`;
-                playNote(
-                    textureNote,
-                    "2n",
-                    time + 0.1 * tempoMultiplier,
-                    velocity * 0.15
-                );
-            }
-        },
-        [...Array(maxCommands).keys()],
-        "8n"
-    );
-
-    Tone.Transport.bpm.value = 60;
-    sequence.start(0);
-    Tone.Transport.start();
+  Tone.Transport.bpm.value = 50;
+  sequence.start(0);
+  Tone.Transport.start();
 }
 
 export { playSVGPath };
