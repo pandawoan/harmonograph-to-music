@@ -3,17 +3,16 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SVG Piano Visualizer</title>
+    <title>SVG Music Visualizer</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <div id="visualizer"></div>
     <div id="controls">
       <input type="file" id="svgUpload" accept=".svg" />
       <button id="playButton">Play</button>
     </div>
+    <canvas id="visualizer"></canvas>
     <div id="svgContainer"></div>
-    <div id="piano"></div>
 
     <script type="module" src="visualizer.js"></script>
     <script type="module" src="svgMusic.js"></script>

@@ -41,13 +41,6 @@ body {
   background-color: #00ffff;
 }
 
-#visualizer {
-  position: relative;
-  width: 840px;
-  height: calc(100vh - 220px);
-  overflow: hidden;
-}
-
 .note {
   position: absolute;
   bottom: 0;
@@ -59,5 +52,25 @@ body {
 }
 
 #controls {
-  margin-bottom: 10px;
+  margin-bottom: 20px;
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#visualizer {
+  position: fixed;
+  z-index: -1;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+}
+
+#svgContainer {
+  position: absolute;
+  top: 50%;
+  right: 50%;
+  transform: translate(50%, -50%);
 }
